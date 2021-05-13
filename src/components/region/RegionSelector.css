@@ -1,0 +1,12 @@
+.region-selectors{
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    margin: 2rem 8rem;
+}
+
+.timer-selector{
+    max-width: 20rem;
+}
