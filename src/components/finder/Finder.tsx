@@ -14,6 +14,7 @@ import {
   TableRow,
   Theme,
   Tooltip,
+  Typography,
   withStyles,
 } from "@material-ui/core";
 import { useEffect, useState } from "react";
@@ -22,6 +23,20 @@ import { getSlots } from "../../store";
 const useStyles = makeStyles({
   table: {
     minWidth: 700,
+  },
+  emptyCard: {
+    height: "30vh",
+    width: "100%"
+  },
+  progress: {
+    marginTop: "20vh"
+  },
+  noData: {
+    marginTop: "10vh"
+  },
+  tablecard: {
+    padding: "1rem 2vw",
+    height: "100%"
   },
 });
 
@@ -54,6 +69,7 @@ export default function Finder(props: any) {
   const [maxsessions, setMaxsessions] = useState<any>([]);
   useEffect(() => {
     const findSlots = async () => {
+      setLoading(true);
       let allSessions = new Set();
       const response: any = await getSlots(props.district);
       if (response && response.centers) {
@@ -71,10 +87,10 @@ export default function Finder(props: any) {
           })
         );
         setMaxsessions(Array.from(allSessions.values()));
-        setLoading(false);
       } else {
         setCenters([]);
       }
+      setLoading(false);
     };
     findSlots();
     let intervalID = setTimeout(() => findSlots(), props.refreshTimer * 1000);
@@ -102,13 +118,11 @@ export default function Finder(props: any) {
   if (centers.length > 0) {
     return (
       <>
-        <Card>
+        <Card className={classes.tablecard}>
           <CardContent>
             <TableContainer component={Paper}>
               <Table
                 className={classes.table}
-                stickyHeader
-                aria-label="sticky table"
               >
                 <TableHead>
                   <TableRow>
@@ -139,13 +153,17 @@ export default function Finder(props: any) {
   } else if (loading) {
     return (
       <>
-        <CircularProgress />
+        <CircularProgress className={classes.progress}/>
       </>
     );
   } else {
     return (
       <>
-        <Card></Card>
+        <Card className={classes.emptyCard}>
+          <Typography className={classes.noData}>
+            No Hospitals Found...
+          </Typography>
+        </Card>
       </>
     );
   }

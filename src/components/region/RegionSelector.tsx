@@ -1,25 +1,38 @@
 import {
-  Card,
+  AppBar,
   createStyles,
+  Divider,
+  Drawer,
   FormControl,
+  IconButton,
   InputLabel,
+  List,
+  ListItem,
   makeStyles,
   MenuItem,
   Select,
   Slider,
   Switch,
   Theme,
+  Toolbar,
   Typography,
 } from "@material-ui/core";
+import { FilterList } from "@material-ui/icons";
 import { useEffect, useState } from "react";
 import { District, getDistricts, getStates, IndiaState } from "../../store";
 import Finder from "../finder/Finder";
-import "./RegionSelector.css";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     formControl: {
-      minWidth: "max-content",
+      width: "20vw",
+    },
+    title: {
+      flexGrow: 1,
+      textAlign: "left",
+    },
+    filterButton: {
+      color: "inherit",
     },
   })
 );
@@ -36,6 +49,7 @@ export default function RegionSelector() {
   ]);
   const [refreshTimer, setRefreshTimer] = useState<number>(30);
   const [senior, setSenior] = useState(false);
+  const [openfilters, setOpenfilters] = useState(false);
 
   useEffect(() => {
     const findStates = async () => {
@@ -84,59 +98,89 @@ export default function RegionSelector() {
     setSenior(event.target.checked);
   };
 
+  const toggleFilters = () => {
+    setOpenfilters(!openfilters);
+  };
+
   return (
     <>
-      <Card>
-        <div className="region-selectors">
-          <FormControl className={classes.formControl} variant="outlined">
-            <InputLabel>State</InputLabel>
-            <Select label="State" value={stateId} onChange={handleStateSelect}>
-              {stateList.map((row: IndiaState) => (
-                <MenuItem key={row.state_id} value={row.state_id}>
-                  {row.state_name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl className={classes.formControl} variant="outlined">
-            <InputLabel>District</InputLabel>
-            <Select
-              label="District"
-              value={districtId}
-              onChange={handleDistrictChange}
-            >
-              {districtList.map((row: District) => (
-                <MenuItem key={row.district_id} value={row.district_id}>
-                  {row.district_name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <div>
-            <Typography gutterBottom>
-              Refresh Timer ({refreshTimer} seconds)
-            </Typography>
-            <Slider
-              className="timer-selector"
-              defaultValue={30}
-              onChange={handleRefreshTimerChange}
-              step={30}
-              marks
-              min={30}
-              max={300}
-              valueLabelDisplay="auto"
-            />
-          </div>
-          <div>
-            <Typography gutterBottom>Show 45+</Typography>
-            <Switch
-              checked={senior}
-              onChange={handleShowSenior}
-              inputProps={{ "aria-label": "secondary checkbox" }}
-            />
-          </div>
-        </div>
-      </Card>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" className={classes.title}>
+            Vaccine Slots
+          </Typography>
+          <IconButton edge="end" aria-label="filter" className={classes.filterButton} onClick={toggleFilters}>
+            <FilterList />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+      <Drawer anchor="right" open={openfilters} onClose={toggleFilters}>
+        <List>
+          <ListItem>
+            <Typography variant="h6">Filters</Typography>
+          </ListItem>
+          <Divider />
+          <ListItem>
+            <FormControl className={classes.formControl}>
+              <InputLabel>State</InputLabel>
+              <Select
+                label="State"
+                value={stateId}
+                onChange={handleStateSelect}
+              >
+                {stateList.map((row: IndiaState) => (
+                  <MenuItem key={row.state_id} value={row.state_id}>
+                    {row.state_name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </ListItem>
+          <ListItem>
+            <FormControl className={classes.formControl}>
+              <InputLabel>District</InputLabel>
+              <Select
+                label="District"
+                value={districtId}
+                onChange={handleDistrictChange}
+              >
+                {districtList.map((row: District) => (
+                  <MenuItem key={row.district_id} value={row.district_id}>
+                    {row.district_name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </ListItem>
+          <ListItem>
+            <div>
+              <Typography gutterBottom>
+                Refresh Timer ({refreshTimer} seconds)
+              </Typography>
+              <Slider
+                className="timer-selector"
+                defaultValue={30}
+                onChange={handleRefreshTimerChange}
+                step={30}
+                marks
+                min={30}
+                max={300}
+                valueLabelDisplay="auto"
+              />
+            </div>
+          </ListItem>
+          <ListItem>
+            <div>
+              <Typography gutterBottom>Show 45+</Typography>
+              <Switch
+                checked={senior}
+                onChange={handleShowSenior}
+                inputProps={{ "aria-label": "secondary checkbox" }}
+              />
+            </div>
+          </ListItem>
+        </List>
+      </Drawer>
       <Finder
         district={districtId}
         refreshTimer={refreshTimer}
