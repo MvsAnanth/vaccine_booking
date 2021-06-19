@@ -16,8 +16,10 @@ import {
   Theme,
   Toolbar,
   Typography,
+  Input,
+  InputAdornment,
 } from "@material-ui/core";
-import { FilterList } from "@material-ui/icons";
+import { FilterList, Search } from "@material-ui/icons";
 import { useEffect, useState } from "react";
 import { District, getDistricts, getStates, IndiaState } from "../../store";
 import Finder from "../finder/Finder";
@@ -41,24 +43,26 @@ export default function RegionSelector() {
   const classes = useStyles();
   const [stateId, setStateId] = useState<number>(0);
   const [stateList, setStateList] = useState<IndiaState[]>([
-    { state_id: 0, state_name: "Loading..." },
+    { state_id: 0, state_name: "" },
   ]);
   const [districtId, setDistrictId] = useState<number>(0);
   const [districtList, setDistrictList] = useState<District[]>([
-    { district_id: 0, district_name: "Loading..." },
+    { district_id: 0, district_name: "" },
   ]);
   const [refreshTimer, setRefreshTimer] = useState<number>(30);
   const [senior, setSenior] = useState(false);
   const [openfilters, setOpenfilters] = useState(false);
+  const [pincode, setPincode] = useState<number>(0);
+  const [searchPinCode, setSearchPinCode] = useState(false);
 
   useEffect(() => {
     const findStates = async () => {
       const response: any = await getStates();
       if (response && response.states) {
         setStateList(response.states);
-        setStateId(response.states[0].state_id);
+        // setStateId(response.states[0].state_id);
       } else {
-        setStateList([{ state_id: 0, state_name: "Loading..." }]);
+        setStateList([{ state_id: 0, state_name: "" }]);
         setStateId(0);
       }
     };
@@ -67,13 +71,15 @@ export default function RegionSelector() {
 
   useEffect(() => {
     const findDistricts = async () => {
-      const response: any = await getDistricts(stateId);
-      if (response && response.districts) {
-        setDistrictList(response.districts);
-        setDistrictId(response.districts[0].district_id);
-      } else {
-        setDistrictList([{ district_id: 0, district_name: "Loading..." }]);
-        setDistrictId(0);
+      if (stateId !== 0) {
+        const response: any = await getDistricts(stateId);
+        if (response && response.districts) {
+          setDistrictList(response.districts);
+          // setDistrictId(response.districts[0].district_id);
+        } else {
+          setDistrictList([{ district_id: 0, district_name: "" }]);
+          setDistrictId(0);
+        }
       }
     };
     findDistricts();
@@ -81,6 +87,9 @@ export default function RegionSelector() {
 
   const handleStateSelect = (event: any) => {
     setStateId(event.target.value as number);
+    setDistrictId(0);
+    setPincode(0);
+    setSearchPinCode(false);
   };
 
   const handleDistrictChange = (event: any) => {
@@ -102,6 +111,23 @@ export default function RegionSelector() {
     setOpenfilters(!openfilters);
   };
 
+  const handlePincodeChange = (event: any) => {
+    let val = event.target.value;
+    if (val) {
+      console.log("changing Pincode as " + val);
+      setPincode(val as number);
+      setDistrictId(0);
+      setStateId(0);
+    } else {
+      setPincode(0);
+      setSearchPinCode(false);
+    }
+  };
+
+  const handleSearchClick = (event: any) => {
+    setSearchPinCode(true);
+  };
+
   return (
     <>
       <AppBar position="static">
@@ -109,7 +135,12 @@ export default function RegionSelector() {
           <Typography variant="h6" className={classes.title}>
             Vaccine Slots
           </Typography>
-          <IconButton edge="end" aria-label="filter" className={classes.filterButton} onClick={toggleFilters}>
+          <IconButton
+            edge="end"
+            aria-label="filter"
+            className={classes.filterButton}
+            onClick={toggleFilters}
+          >
             <FilterList />
           </IconButton>
         </Toolbar>
@@ -122,17 +153,42 @@ export default function RegionSelector() {
           <Divider />
           <ListItem>
             <FormControl className={classes.formControl}>
+              <InputLabel>Enter Pincode</InputLabel>
+              <Input
+                name="pincode"
+                type="text"
+                id="pincode"
+                value={pincode === 0 ? "" : pincode}
+                onChange={handlePincodeChange}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton onClick={handleSearchClick}>
+                      {" "}
+                      <Search />{" "}
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+          </ListItem>
+          <div>
+            <h4>Or</h4>
+          </div>
+          <ListItem>
+            <FormControl className={classes.formControl}>
               <InputLabel>State</InputLabel>
               <Select
                 label="State"
                 value={stateId}
                 onChange={handleStateSelect}
               >
-                {stateList.map((row: IndiaState) => (
-                  <MenuItem key={row.state_id} value={row.state_id}>
-                    {row.state_name}
-                  </MenuItem>
-                ))}
+                <MenuItem value={"0"}>Select State</MenuItem>
+                {stateList &&
+                  stateList.map((row: IndiaState) => (
+                    <MenuItem key={row.state_id} value={row.state_id}>
+                      {row.state_name}
+                    </MenuItem>
+                  ))}
               </Select>
             </FormControl>
           </ListItem>
@@ -144,11 +200,13 @@ export default function RegionSelector() {
                 value={districtId}
                 onChange={handleDistrictChange}
               >
-                {districtList.map((row: District) => (
-                  <MenuItem key={row.district_id} value={row.district_id}>
-                    {row.district_name}
-                  </MenuItem>
-                ))}
+                <MenuItem value={"0"}>Select District</MenuItem>
+                {districtList &&
+                  districtList.map((row: District) => (
+                    <MenuItem key={row.district_id} value={row.district_id}>
+                      {row.district_name}
+                    </MenuItem>
+                  ))}
               </Select>
             </FormControl>
           </ListItem>
@@ -185,6 +243,7 @@ export default function RegionSelector() {
         district={districtId}
         refreshTimer={refreshTimer}
         age_limit={senior ? 45 : 18}
+        pincode={searchPinCode ? pincode : 0}
       />
     </>
   );

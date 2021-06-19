@@ -13,6 +13,7 @@ const useStyles = makeStyles({
 const App = () => {
   const classes = useStyles();
   console.log(classic)
+  classic.palette.type = "dark";
   const theme = createMuiTheme(classic);
   return (
     <MuiThemeProvider theme={theme}>

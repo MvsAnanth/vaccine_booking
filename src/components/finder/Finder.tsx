@@ -16,9 +16,10 @@ import {
   Tooltip,
   Typography,
   withStyles,
+  Chip,
 } from "@material-ui/core";
 import { useEffect, useState } from "react";
-import { getSlots } from "../../store";
+import { getSlots, getSlotsWithPincode } from "../../store";
 
 const useStyles = makeStyles({
   table: {
@@ -26,17 +27,20 @@ const useStyles = makeStyles({
   },
   emptyCard: {
     height: "30vh",
-    width: "100%"
+    width: "100%",
   },
   progress: {
-    marginTop: "20vh"
+    marginTop: "20vh",
   },
   noData: {
-    marginTop: "10vh"
+    marginTop: "10vh",
   },
   tablecard: {
     padding: "1rem 2vw",
-    height: "100%"
+    height: "100%",
+  },
+  chip: {
+    margin: "1vh",
   },
 });
 
@@ -67,11 +71,19 @@ export default function Finder(props: any) {
   const [centers, setCenters] = useState<any>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [maxsessions, setMaxsessions] = useState<any>([]);
+
   useEffect(() => {
     const findSlots = async () => {
       setLoading(true);
+      // dates of sessions
       let allSessions = new Set();
-      const response: any = await getSlots(props.district);
+      let response: any;
+      if (props.pincode && String(props.pincode).length === 6) {
+        response = await getSlotsWithPincode(props.pincode);
+      } else {
+        response = await getSlots(props.district);
+      }
+      // const response: any = await getSlots(props.district);
       if (response && response.centers) {
         setCenters(
           response.centers.filter((center: any) => {
@@ -79,8 +91,9 @@ export default function Finder(props: any) {
               center.sessions.filter((session: any) => {
                 allSessions.add(session.date);
                 return (
-                  session.min_age_limit === props.age_limit &&
-                  session.available_capacity > 0
+                  session.min_age_limit === props.age_limit
+                  // session.min_age_limit === props.age_limit &&
+                  // session.available_capacity > 0
                 );
               }).length > 0
             );
@@ -98,50 +111,56 @@ export default function Finder(props: any) {
       clearTimeout(intervalID);
     };
   }, [props]);
+
+  // show no. of sessions available per center(rowdata)
   const makeSessions = (rowdata: any) => {
     let row = [];
     for (let i = 0; i < maxsessions.length; i++) {
       if (rowdata.sessions[i]) {
         row.push(
           <StyledTableCell key={rowdata.sessions[i].session_id} align="center">
-            <Link onClick={() => {}}>
+            <Link onClick={() => {}} color="inherit">
               {rowdata.sessions[i].available_capacity}
+              {console.log(rowdata)}
             </Link>
+            <Chip className={classes.chip} variant="outlined" size="small" label={rowdata.fee_type} />
           </StyledTableCell>
         );
+        // && rowdata.sessions[i].date === maxsessions[i]  -> Not Required
+        // check row.date == maxsessions[i].date
       } else {
-        row.push(<StyledTableCell></StyledTableCell>);
+        row.push(<StyledTableCell key={maxsessions[i]}></StyledTableCell>);
       }
     }
     return row;
   };
+
   if (centers.length > 0) {
     return (
       <>
         <Card className={classes.tablecard}>
           <CardContent>
             <TableContainer component={Paper}>
-              <Table
-                className={classes.table}
-              >
+              <Table className={classes.table}>
                 <TableHead>
                   <TableRow>
                     <StyledTableCell>Hospital</StyledTableCell>
-                    {maxsessions.map((column: any) => (
-                      <StyledTableCell key={column} align="center">
-                        {column}
+                    {/* max sessions have all dates of available sessions*/}
+                    {maxsessions.map((session_date: any) => (
+                      <StyledTableCell key={session_date} align="center">
+                        {session_date}
                       </StyledTableCell>
                     ))}
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {centers.map((row: any) => (
-                    <StyledTableRow key={row.name}>
-                      <Tooltip title={row.address} placement="bottom">
-                        <StyledTableCell>{row.name}</StyledTableCell>
-                      </Tooltip>
-                      {makeSessions(row)}
-                    </StyledTableRow>
+                  {centers.map((center: any) => (
+                      <StyledTableRow key={center.name}>
+                        <Tooltip title={center.address} placement="bottom">
+                          <StyledTableCell>{center.name}</StyledTableCell>
+                        </Tooltip>
+                        {makeSessions(center)}
+                      </StyledTableRow>
                   ))}
                 </TableBody>
               </Table>
@@ -153,7 +172,7 @@ export default function Finder(props: any) {
   } else if (loading) {
     return (
       <>
-        <CircularProgress className={classes.progress}/>
+        <CircularProgress className={classes.progress} />
       </>
     );
   } else {
