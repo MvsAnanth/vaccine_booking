@@ -1,6 +1,5 @@
 import {
-  Card,
-  CardContent,
+  Chip,
   CircularProgress,
   createStyles,
   Link,
@@ -11,23 +10,38 @@ import {
   TableCell,
   TableContainer,
   TableHead,
+  TablePagination,
   TableRow,
   Theme,
   Tooltip,
   Typography,
   withStyles,
-  Chip,
 } from "@material-ui/core";
 import { useEffect, useState } from "react";
 import { getSlots, getSlotsWithPincode } from "../../store";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme: Theme) => ({
+  root: {
+    // width: "100%",
+    // maxWidth: "800",
+  },
   table: {
-    minWidth: 700,
+    '& thead th': {
+      fontWeight: '600',
+      color: "white",
+      backgroundColor: theme.palette.primary.light
+    },
+    '& tbody td': {
+      fontWeight: '300',
+    },
+    '& tbody tr:hover': {
+      backgroundColor: "#fffbf2",
+      cursor: 'pointer'
+    }
   },
   emptyCard: {
-    height: "30vh",
-    width: "100%",
+    // height: "30vh",
+    // width: "100%",
   },
   progress: {
     marginTop: "20vh",
@@ -35,19 +49,27 @@ const useStyles = makeStyles({
   noData: {
     marginTop: "10vh",
   },
-  tablecard: {
-    padding: "1rem 2vw",
-    height: "100%",
+  // tablecard: {
+  //   padding: "1rem 2vw",
+  //   height: "100%",
+  // },
+  tableContainer: {
+    borderRadius: 15,
   },
   chip: {
     margin: "1vh",
   },
-});
+  pagination: {
+    "& .MuiTablePagination-spacer": {
+      display: "flex",
+    },
+  },
+}));
 
 const StyledTableCell = withStyles((theme: Theme) =>
   createStyles({
     head: {
-      backgroundColor: theme.palette.common.black,
+      // backgroundColor: theme.palette.common.black,
       color: theme.palette.common.white,
     },
     body: {
@@ -60,7 +82,7 @@ const StyledTableRow = withStyles((theme: Theme) =>
   createStyles({
     root: {
       "&:nth-of-type(odd)": {
-        backgroundColor: theme.palette.action.hover,
+        // backgroundColor: theme.palette.action.hover,
       },
     },
   })
@@ -71,6 +93,23 @@ export default function Finder(props: any) {
   const [centers, setCenters] = useState<any>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [maxsessions, setMaxsessions] = useState<any>([]);
+
+  // Todo: Add Pagination - DONE
+  // Todo: put this as global state,
+  // Todo: set page 0 when district or state or pincode changes - DONE
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
 
   useEffect(() => {
     const findSlots = async () => {
@@ -105,6 +144,7 @@ export default function Finder(props: any) {
       }
       setLoading(false);
     };
+    handleChangePage("", 0);
     findSlots();
     let intervalID = setTimeout(() => findSlots(), props.refreshTimer * 1000);
     return () => {
@@ -121,9 +161,14 @@ export default function Finder(props: any) {
           <StyledTableCell key={rowdata.sessions[i].session_id} align="center">
             <Link onClick={() => {}} color="inherit">
               {rowdata.sessions[i].available_capacity}
-              {console.log(rowdata)}
+              {/* {console.log(rowdata)} */}
             </Link>
-            <Chip className={classes.chip} variant="outlined" size="small" label={rowdata.fee_type} />
+            <Chip
+              className={classes.chip}
+              variant="outlined"
+              size="small"
+              label={rowdata.fee_type}
+            />
           </StyledTableCell>
         );
         // && rowdata.sessions[i].date === maxsessions[i]  -> Not Required
@@ -138,35 +183,55 @@ export default function Finder(props: any) {
   if (centers.length > 0) {
     return (
       <>
-        <Card className={classes.tablecard}>
-          <CardContent>
-            <TableContainer component={Paper}>
-              <Table className={classes.table}>
-                <TableHead>
-                  <TableRow>
-                    <StyledTableCell>Hospital</StyledTableCell>
-                    {/* max sessions have all dates of available sessions*/}
-                    {maxsessions.map((session_date: any) => (
-                      <StyledTableCell key={session_date} align="center">
-                        {session_date}
-                      </StyledTableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {centers.map((center: any) => (
-                      <StyledTableRow key={center.name}>
-                        <Tooltip title={center.address} placement="bottom">
-                          <StyledTableCell>{center.name}</StyledTableCell>
-                        </Tooltip>
-                        {makeSessions(center)}
-                      </StyledTableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </CardContent>
-        </Card>
+        <Paper elevation={0} square className={classes.root}>
+        <TableContainer className={classes.tableContainer}>
+          <Table
+            className={classes.table}
+            stickyHeader
+            aria-label="sticky table"
+          >
+            <TableHead>
+              <TableRow>
+                <StyledTableCell>Hospital</StyledTableCell>
+                {/* max sessions have all dates of available sessions*/}
+                {maxsessions.map((session_date: any) => (
+                  <StyledTableCell key={session_date} align="center">
+                    {session_date}
+                  </StyledTableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {centers
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((center: any) => (
+                  <StyledTableRow
+                    hover
+                    role="checkbox"
+                    tabIndex={-1}
+                    key={center.name}
+                  >
+                    <Tooltip title={center.address} placement="bottom">
+                      <StyledTableCell>{center.name}</StyledTableCell>
+                    </Tooltip>
+                    {makeSessions(center)}
+                  </StyledTableRow>
+                ))}
+            </TableBody>
+            {/* <TableFooter></TableFooter> */}
+          </Table>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25, 100]}
+            component="div"
+            count={centers.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onChangePage={handleChangePage}
+            onChangeRowsPerPage={handleChangeRowsPerPage}
+            className={classes.pagination}
+          />
+        </TableContainer>
+        </Paper>
       </>
     );
   } else if (loading) {
@@ -178,11 +243,13 @@ export default function Finder(props: any) {
   } else {
     return (
       <>
-        <Card className={classes.emptyCard}>
-          <Typography className={classes.noData}>
-            No Hospitals Found...
+        {/* <Card className={classes.emptyCard}>
+        </Card> */}
+        <Paper elevation={0} square className={classes.root}>
+        <Typography className={classes.noData}>
+          No Hospitals Found...
           </Typography>
-        </Card>
+          </Paper>
       </>
     );
   }

@@ -1,6 +1,6 @@
 import {
   AppBar,
-  createStyles,
+  // createStyles,
   Divider,
   Drawer,
   FormControl,
@@ -18,26 +18,48 @@ import {
   Typography,
   Input,
   InputAdornment,
+  Paper,
 } from "@material-ui/core";
 import { FilterList, Search } from "@material-ui/icons";
+// import Brightness7Icon from "@material-ui/icons/Brightness7";
+// import Brightness3Icon from "@material-ui/icons/Brightness3";
+// import { classic } from "../../themes/themes";
+// import Tooltip from "@material-ui/core/Tooltip";
 import { useEffect, useState } from "react";
 import { District, getDistricts, getStates, IndiaState } from "../../store";
 import Finder from "../finder/Finder";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    formControl: {
-      width: "20vw",
-    },
-    title: {
-      flexGrow: 1,
-      textAlign: "left",
-    },
-    filterButton: {
-      color: "inherit",
-    },
-  })
-);
+// const useStyles = makeStyles((theme: Theme) =>
+//   createStyles({
+//     formControl: {
+//       width: "20vw",
+//     },
+//     title: {
+//       flexGrow: 1,
+//       textAlign: "left",
+//     },
+//     filterButton: {
+//       color: "inherit",
+//     },
+//   })
+// );
+
+const useStyles = makeStyles((theme: Theme) => ({
+  formControl: {
+    width: "20vw",
+  },
+  title: {
+    flexGrow: 1,
+    textAlign: "left",
+  },
+  filterButton: {
+    color: "inherit",
+  },
+  finderContent: {
+    margin: theme.spacing(5),
+    padding: theme.spacing(3),
+  },
+}));
 
 export default function RegionSelector() {
   const classes = useStyles();
@@ -128,6 +150,17 @@ export default function RegionSelector() {
     setSearchPinCode(true);
   };
 
+  // Add Dark Theme mode
+  // const [darkTheme, setTheme] = useState(true)
+
+  // const icon = !darkTheme ? <Brightness7Icon /> : <Brightness3Icon />
+  // // Icons imported from `@material-ui/icons`
+  // darkTheme ? classic.palette.type = "dark" : classic.palette.type = "light";
+
+  // const handleThemeChange = (event: any) => {
+  //   setTheme(!darkTheme)
+  // };
+
   return (
     <>
       <AppBar position="static">
@@ -168,6 +201,7 @@ export default function RegionSelector() {
                     </IconButton>
                   </InputAdornment>
                 }
+                autoComplete="off"
               />
             </FormControl>
           </ListItem>
@@ -239,12 +273,14 @@ export default function RegionSelector() {
           </ListItem>
         </List>
       </Drawer>
-      <Finder
-        district={districtId}
-        refreshTimer={refreshTimer}
-        age_limit={senior ? 45 : 18}
-        pincode={searchPinCode ? pincode : 0}
-      />
+      <Paper className={classes.finderContent}>
+        <Finder
+          district={districtId}
+          refreshTimer={refreshTimer}
+          age_limit={senior ? 45 : 18}
+          pincode={searchPinCode ? pincode : 0}
+        />
+      </Paper>
     </>
   );
 }
