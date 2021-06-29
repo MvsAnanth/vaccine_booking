@@ -4,8 +4,13 @@ import "./index.css";
 import "@material-ui/styles";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import { Store } from "./store/store";
 
-ReactDOM.render(<App />, document.getElementById("root"));
+ReactDOM.render((
+  <Store>
+    <App />
+  </Store>
+), document.getElementById("root"));
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

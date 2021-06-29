@@ -15,11 +15,14 @@ import {
   Switch,
   Theme,
   Toolbar,
+  Tooltip,
   Typography,
 } from "@material-ui/core";
-import { FilterList } from "@material-ui/icons";
+import { Brightness7, Brightness3, FilterList } from "@material-ui/icons";
 import { useEffect, useState } from "react";
 import { District, getDistricts, getStates, IndiaState } from "../../store";
+import { ActionType } from "../../store/reducer";
+import { useGlobalContext } from "../../store/store";
 import Finder from "../finder/Finder";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -31,14 +34,16 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
       textAlign: "left",
     },
-    filterButton: {
+    iconButton: {
       color: "inherit",
+      marginLeft: "1rem",
     },
   })
 );
 
 export default function RegionSelector() {
   const classes = useStyles();
+  const { state, dispatch } = useGlobalContext();
   const [stateId, setStateId] = useState<number>(0);
   const [stateList, setStateList] = useState<IndiaState[]>([
     { state_id: 0, state_name: "Loading..." },
@@ -109,9 +114,28 @@ export default function RegionSelector() {
           <Typography variant="h6" className={classes.title}>
             Vaccine Slots
           </Typography>
-          <IconButton edge="end" aria-label="filter" className={classes.filterButton} onClick={toggleFilters}>
-            <FilterList />
-          </IconButton>
+          <Tooltip title={state.darkTheme ? "Light Theme" : "Dark Theme"}>
+            <IconButton
+              edge="end"
+              aria-label="theme"
+              className={classes.iconButton}
+              onClick={() => {
+                dispatch && dispatch({ type: ActionType.TOGGLE_THEME });
+              }}
+            >
+              {state.darkTheme ? <Brightness7 /> : <Brightness3 />}
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Filters">
+            <IconButton
+              edge="end"
+              aria-label="filter"
+              className={classes.iconButton}
+              onClick={toggleFilters}
+            >
+              <FilterList />
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
       <Drawer anchor="right" open={openfilters} onClose={toggleFilters}>

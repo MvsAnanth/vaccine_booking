@@ -26,17 +26,17 @@ const useStyles = makeStyles({
   },
   emptyCard: {
     height: "30vh",
-    width: "100%"
+    width: "100%",
   },
   progress: {
-    marginTop: "20vh"
+    marginTop: "20vh",
   },
   noData: {
-    marginTop: "10vh"
+    marginTop: "10vh",
   },
   tablecard: {
     padding: "1rem 2vw",
-    height: "100%"
+    height: "100%",
   },
 });
 
@@ -61,6 +61,8 @@ const StyledTableRow = withStyles((theme: Theme) =>
     },
   })
 )(TableRow);
+
+const mapsURL = "https://www.google.com/maps/search/?api=1&query=";
 
 export default function Finder(props: any) {
   const classes = useStyles();
@@ -104,7 +106,13 @@ export default function Finder(props: any) {
       if (rowdata.sessions[i]) {
         row.push(
           <StyledTableCell key={rowdata.sessions[i].session_id} align="center">
-            <Link onClick={() => {}}>
+            <Link
+              underline="hover"
+              color="inherit"
+              onClick={() => {
+                window.open(mapsURL + encodeURI(rowdata.name));
+              }}
+            >
               {rowdata.sessions[i].available_capacity}
             </Link>
           </StyledTableCell>
@@ -121,9 +129,7 @@ export default function Finder(props: any) {
         <Card className={classes.tablecard}>
           <CardContent>
             <TableContainer component={Paper}>
-              <Table
-                className={classes.table}
-              >
+              <Table className={classes.table}>
                 <TableHead>
                   <TableRow>
                     <StyledTableCell>Hospital</StyledTableCell>
@@ -153,7 +159,7 @@ export default function Finder(props: any) {
   } else if (loading) {
     return (
       <>
-        <CircularProgress className={classes.progress}/>
+        <CircularProgress className={classes.progress} />
       </>
     );
   } else {
