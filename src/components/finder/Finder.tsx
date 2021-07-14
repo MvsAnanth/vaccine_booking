@@ -4,7 +4,6 @@ import {
   createStyles,
   Link,
   makeStyles,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -26,22 +25,18 @@ const useStyles = makeStyles((theme: Theme) => ({
     // maxWidth: "800",
   },
   table: {
-    '& thead th': {
-      fontWeight: '600',
+    "& thead th": {
+      fontWeight: "600",
       color: "white",
-      backgroundColor: theme.palette.primary.light
+      backgroundColor: theme.palette.primary.light,
     },
-    '& tbody td': {
-      fontWeight: '300',
+    "& tbody td": {
+      fontWeight: "300",
     },
-    '& tbody tr:hover': {
+    "& tbody tr:hover": {
       backgroundColor: "#fffbf2",
-      cursor: 'pointer'
-    }
-  },
-  emptyCard: {
-    // height: "30vh",
-    // width: "100%",
+      cursor: "pointer",
+    },
   },
   progress: {
     marginTop: "20vh",
@@ -49,12 +44,10 @@ const useStyles = makeStyles((theme: Theme) => ({
   noData: {
     marginTop: "10vh",
   },
-  // tablecard: {
-  //   padding: "1rem 2vw",
-  //   height: "100%",
-  // },
   tableContainer: {
     borderRadius: 15,
+    height: "80vh",
+    width: "100%",
   },
   chip: {
     margin: "1vh",
@@ -88,6 +81,8 @@ const StyledTableRow = withStyles((theme: Theme) =>
   })
 )(TableRow);
 
+const mapsURL = "https://www.google.com/maps/search/?api=1&query=";
+
 export default function Finder(props: any) {
   const classes = useStyles();
   const [centers, setCenters] = useState<any>([]);
@@ -95,7 +90,7 @@ export default function Finder(props: any) {
   const [maxsessions, setMaxsessions] = useState<any>([]);
 
   // Todo: Add Pagination - DONE
-  // Todo: put this as global state,
+  // Todo: put this as global state, DONE
   // Todo: set page 0 when district or state or pincode changes - DONE
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -159,7 +154,13 @@ export default function Finder(props: any) {
       if (rowdata.sessions[i]) {
         row.push(
           <StyledTableCell key={rowdata.sessions[i].session_id} align="center">
-            <Link onClick={() => {}} color="inherit">
+            <Link
+              underline="hover"
+              color="inherit"
+              onClick={() => {
+                window.open(mapsURL + encodeURI(rowdata.name));
+              }}
+            >
               {rowdata.sessions[i].available_capacity}
               {/* {console.log(rowdata)} */}
             </Link>
@@ -183,7 +184,6 @@ export default function Finder(props: any) {
   if (centers.length > 0) {
     return (
       <>
-        <Paper elevation={0} square className={classes.root}>
         <TableContainer className={classes.tableContainer}>
           <Table
             className={classes.table}
@@ -218,20 +218,18 @@ export default function Finder(props: any) {
                   </StyledTableRow>
                 ))}
             </TableBody>
-            {/* <TableFooter></TableFooter> */}
           </Table>
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25, 100]}
-            component="div"
-            count={centers.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onChangePage={handleChangePage}
-            onChangeRowsPerPage={handleChangeRowsPerPage}
-            className={classes.pagination}
-          />
         </TableContainer>
-        </Paper>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25, 100]}
+          component="div"
+          count={centers.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onChangePage={handleChangePage}
+          onChangeRowsPerPage={handleChangeRowsPerPage}
+          className={classes.pagination}
+        />
       </>
     );
   } else if (loading) {
@@ -243,13 +241,9 @@ export default function Finder(props: any) {
   } else {
     return (
       <>
-        {/* <Card className={classes.emptyCard}>
-        </Card> */}
-        <Paper elevation={0} square className={classes.root}>
         <Typography className={classes.noData}>
           No Hospitals Found...
-          </Typography>
-          </Paper>
+        </Typography>
       </>
     );
   }
